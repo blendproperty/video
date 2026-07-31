@@ -42,6 +42,9 @@ RUN cd remotion && npx remotion browser ensure
 
 # --- web/ ---------------------------------------------------------------
 COPY web/package.json web/package-lock.json* ./web/
+# Needed before `npm install`, because that triggers a `postinstall` script
+# (`prisma generate`) which requires prisma/schema.prisma to already exist.
+COPY web/prisma ./web/prisma
 RUN cd web && npm install
 
 COPY web ./web
