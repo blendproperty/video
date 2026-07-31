@@ -3,13 +3,13 @@
 // up a headless Chrome instance to do the actual frame rendering).
 //
 // KNOWN LIMITATION: this bundles the Remotion project once and caches the
-// bundle location in memory. If you edit remotion/src/**, restart the web
-// app (`pm2 restart` / systemd restart) to pick up the change — it will not
-// hot-reload. Also: only one render truly runs at a time in practice on a
-// modest VPS; there's no real job queue here (no Redis/BullMQ), just
-// "fire and forget" per request. Fine for occasional use by a small team;
-// if multiple people start generating videos simultaneously and the VPS
-// struggles, that's the first thing to revisit (add a proper queue).
+// bundle location in memory. If you edit remotion/src/**, restart the
+// container to pick up the change — it will not hot-reload. Also: only one
+// render truly runs at a time in practice on a modest VPS; there's no real
+// job queue here (no Redis/BullMQ), just "fire and forget" per request.
+// Fine for occasional use by a small team; if multiple people start
+// generating videos simultaneously and the VPS struggles, that's the first
+// thing to revisit (add a proper queue).
 
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
@@ -56,6 +56,12 @@ export async function renderVideoForJob(jobId: string): Promise<void> {
     codec: 'h264',
     outputLocation,
     inputProps,
+    // Recommended by Remotion for Docker/Linux deployments — avoids a class
+    // of Chromium crashes that are more common in containers.
+    // https://www.remotion.dev/docs/miscellaneous/linux-single-process
+    chromiumOptions: {
+      enableMultiProcessOnLinux: true,
+    },
   });
 
   await prisma.job.update({
