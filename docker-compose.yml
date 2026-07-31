@@ -1,0 +1,19 @@
+services:
+  video-portal:
+    build: .
+    container_name: video-portal
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    env_file:
+      - ./web/.env
+    volumes:
+      # SQLite database — persists across container rebuilds/restarts.
+      - ./data/db:/app/web/prisma
+      # Rendered MP4s — served directly by Next.js from public/renders.
+      - ./data/renders:/app/web/public/renders
+      # Uploaded property photos, written by the job-creation API route.
+      - ./data/uploads:/app/remotion/public/images/jobs
+    # Headless Chrome needs more than Docker's default 64MB /dev/shm, or it
+    # crashes partway through a render with cryptic errors.
+    shm_size: '1gb'

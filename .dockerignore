@@ -1,0 +1,9 @@
+**/node_modules
+**/.next
+.git
+*.log
+web/prisma/dev.db
+web/prisma/dev.db-journal
+web/.env
+web/public/renders
+remotion/public/images/jobs
