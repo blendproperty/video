@@ -1,10 +1,42 @@
 services:
+  traefik:
+    image: traefik:v3.2
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirect all plain HTTP to HTTPS.
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.leresolver.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/letsencrypt:/letsencrypt
+
   video-portal:
     build: .
     container_name: video-portal
     restart: unless-stopped
-    ports:
-      - "3100:3100"
+    # No host port mapping needed — Traefik reaches this container directly
+    # over the internal Docker network. Use an SSH tunnel + `docker compose
+    # exec` or temporarily add "3100:3100" back here if you need direct
+    # access for debugging.
+    expose:
+      - "3100"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.video-portal.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.video-portal.entrypoints=websecure"
+      - "traefik.http.routers.video-portal.tls.certresolver=leresolver"
+      - "traefik.http.services.video-portal.loadbalancer.server.port=3100"
     env_file:
       - ./web/.env
     volumes:
