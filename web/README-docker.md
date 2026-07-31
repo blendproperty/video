@@ -19,12 +19,19 @@ Create `web/.env` if you haven't already (see `web/.env.example`):
 SECRET=$(openssl rand -base64 32)
 
 cat > web/.env << EOF
-DATABASE_URL="file:./prisma/dev.db"
+DATABASE_URL="file:/data/dev.db"
 AUTH_SECRET="$SECRET"
 ADMIN_EMAIL="brettd@blendproperty.co.za"
 ADMIN_PASSWORD="ChangeThisPassword123!"
 EOF
 ```
+
+Note: `DATABASE_URL` points at `/data`, not `./prisma/dev.db` — `/data` is a
+dedicated path mounted from `./data/db` on the host (see `docker-compose.yml`).
+The `prisma/` folder inside the container holds `schema.prisma` and the
+migrations baked into the image itself, so it must never be the target of a
+volume mount — doing so hides those files behind an empty host folder and
+`prisma migrate deploy` fails with "Could not find Prisma Schema".
 
 ## Build and start
 
