@@ -79,6 +79,12 @@ button,
   display: inline-block;
 }
 
+.secondary-button {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
 .link-button {
   background: none;
   color: rgba(255, 255, 255, 0.6);
@@ -100,13 +106,116 @@ legend {
   color: #3b6ea5;
 }
 
+.radio-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 16px;
+}
+
+/* --- Multi-step wizard (new video form) --------------------------------- */
+
+.wizard-steps {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  gap: 4px;
+}
+
+.wizard-step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  background: #11161d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wizard-step-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.wizard-step.active {
+  color: #fff;
+  border-color: #3b6ea5;
+  background: rgba(59, 110, 165, 0.15);
+}
+
+.wizard-step.active .wizard-step-index {
+  background: #3b6ea5;
+  color: #fff;
+}
+
+.wizard-step.done {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.wizard-step.done .wizard-step-index {
+  background: rgba(76, 175, 80, 0.35);
+  color: #fff;
+}
+
+.wizard-nav {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.wizard-nav-spacer {
+  flex: 1;
+}
+
+/* --- Photo upload grid --------------------------------------------------- */
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
 .photo-slot {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 14px;
+  background: #0e1319;
+}
+
+.photo-slot span {
+  font-weight: 600;
+  color: #fff;
 }
 
 .photo-slot small {
   color: rgba(255, 255, 255, 0.45);
+}
+
+.photo-slot-filled {
+  border-color: rgba(76, 175, 80, 0.5);
+  background: rgba(76, 175, 80, 0.06);
+}
+
+.photo-slot-filename {
+  color: #8bc98f !important;
+  word-break: break-all;
 }
 
 .error {
