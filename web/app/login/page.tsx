@@ -1,0 +1,50 @@
+'use client';
+
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const res = await signIn('credentials', { email, password, redirect: false });
+    setLoading(false);
+
+    if (!res || res.error) {
+      setError('Invalid email or password.');
+      return;
+    }
+
+    router.push('/');
+    router.refresh();
+  };
+
+  return (
+    <div className="auth-page">
+      <form className="auth-card" onSubmit={onSubmit}>
+        <h1 style={{ fontSize: 18, marginBottom: 4 }}>Blend Property — Video Studio</h1>
+        <label>
+          Email
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </label>
+        <label>
+          Password
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </label>
+        {error && <p className="error">{error}</p>}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+    </div>
+  );
+}

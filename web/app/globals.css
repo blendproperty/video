@@ -1,0 +1,145 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: #0b0f14;
+  color: #f2f2f2;
+}
+
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 32px;
+  border-radius: 16px;
+  background: #11161d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auth-card label,
+.job-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 12px;
+}
+
+input,
+textarea {
+  background: #0b0f14;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+button,
+.primary-button {
+  background: #3b6ea5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.link-button {
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0;
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+fieldset {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+legend {
+  padding: 0 8px;
+  font-weight: 700;
+  color: #3b6ea5;
+}
+
+.photo-slot {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
+}
+
+.photo-slot small {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 14px;
+}
+
+.job-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.job-list a {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #11161d;
+  color: #fff;
+  text-decoration: none;
+}
+
+.status {
+  font-size: 12px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.status-done { background: rgba(76, 175, 80, 0.25); }
+.status-failed { background: rgba(255, 107, 107, 0.25); }
+.status-rendering, .status-pending { background: rgba(59, 110, 165, 0.3); }

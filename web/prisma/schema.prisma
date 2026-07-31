@@ -1,0 +1,38 @@
+// Prisma schema for the video portal.
+//
+// SQLite by default — fine for a single-VPS, low-concurrency internal tool.
+// If this ever needs multiple app servers or heavier concurrent use, swap
+// the datasource for Postgres (change `provider` and `DATABASE_URL`) —
+// the rest of the schema is portable as-is.
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  jobs         Job[]
+}
+
+model Job {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  status       String   @default("PENDING") // PENDING | RENDERING | DONE | FAILED
+  aspect       String   @default("landscape") // landscape | vertical
+  propertyJson String
+  mediaJson    String
+  outputPath   String?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
