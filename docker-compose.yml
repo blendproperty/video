@@ -1,41 +1,23 @@
 services:
-  traefik:
-    image: traefik:v3.2
-    container_name: traefik
-    restart: unless-stopped
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      # Redirect all plain HTTP to HTTPS.
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.leresolver.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./data/letsencrypt:/letsencrypt
-
   video-portal:
     build: .
     container_name: video-portal
     restart: unless-stopped
-    # No host port mapping needed — Traefik reaches this container directly
-    # over the internal Docker network. Use an SSH tunnel + `docker compose
-    # exec` or temporarily add "3100:3100" back here if you need direct
-    # access for debugging.
-    expose:
-      - "3100"
+    # No traefik service here — this VPS already runs a shared Traefik
+    # instance (container "root-traefik-1", compose project "root", network
+    # "root_default") that fronts every app on the box, including this one.
+    # We just join that network and add matching labels; Traefik discovers
+    # us automatically via the Docker provider.
+    networks:
+      - default
+      - root_default
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=root_default"
       - "traefik.http.routers.video-portal.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.video-portal.entrypoints=websecure"
-      - "traefik.http.routers.video-portal.tls.certresolver=leresolver"
+      - "traefik.http.routers.video-portal.tls=true"
+      - "traefik.http.routers.video-portal.tls.certresolver=mytlschallenge"
       - "traefik.http.services.video-portal.loadbalancer.server.port=3100"
     env_file:
       - ./web/.env
@@ -52,3 +34,7 @@ services:
     # Headless Chrome needs more than Docker's default 64MB /dev/shm, or it
     # crashes partway through a render with cryptic errors.
     shm_size: '1gb'
+
+networks:
+  root_default:
+    external: true
