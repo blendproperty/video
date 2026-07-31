@@ -4,6 +4,10 @@ import bcrypt from 'bcryptjs';
 import { prisma } from './prisma';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Required behind a reverse proxy (Traefik terminates TLS and forwards
+  // plain HTTP to this container) — otherwise Auth.js rejects every request
+  // with "UntrustedHost" since it can't verify the Host header itself.
+  trustHost: true,
   session: { strategy: 'jwt' },
   pages: { signIn: '/login' },
   providers: [
