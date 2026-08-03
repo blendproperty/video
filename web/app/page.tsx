@@ -16,7 +16,11 @@ export default async function DashboardPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Video Studio</h1>
+        <div className="brand-mark">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/midpoint-mark.svg" alt="Midpoint" />
+          <h1 style={{ fontSize: 20, margin: 0 }}>Video Studio</h1>
+        </div>
         <form
           action={async () => {
             'use server';
