@@ -33,7 +33,7 @@ const TextWordmark: React.FC<{ frame: number }> = ({ frame }) => {
         transform: `translateY(${translateY}px)`,
         fontFamily: theme.fonts.heading,
         fontSize: 56,
-        fontWeight: 700,
+        fontWeight: theme.weights.heading,
         letterSpacing: 4,
         color: theme.colors.textPrimary,
         textTransform: 'uppercase',
