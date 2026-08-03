@@ -196,6 +196,21 @@ export default function NewJobPage() {
       monthlyRental: listing.monthlyRental != null ? String(listing.monthlyRental) : prev.monthlyRental,
       ratePerSquareMetre: listing.ratePerM2 != null ? String(listing.ratePerM2) : prev.ratePerSquareMetre,
       availability: listing.availability || prev.availability,
+      // The listings API doesn't have a dedicated "video tagline" field —
+      // `summary` (short marketing blurb) is the closest fit, so use that
+      // for the punchy headline and reserve `description` (full body copy)
+      // for the description field below. Falls back to a category-aware
+      // generic line if the listing has no summary set, so this is never
+      // left blank when pulling from a listing.
+      headline:
+        listing.summary ||
+        `${
+          category === 'commercial'
+            ? 'Premium office space'
+            : category === 'land'
+              ? 'Prime land opportunity'
+              : 'Warehouse and offices,\nall under one roof'
+        }${listing.location.suburb ? ` in ${listing.location.suburb}` : ''}`,
       description: listing.description || listing.summary || prev.description,
       featuresText: listing.features.length > 0 ? listing.features.join(', ') : prev.featuresText,
       contact: primaryContact
