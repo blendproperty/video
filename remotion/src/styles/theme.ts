@@ -11,7 +11,10 @@ import { loadFont } from '@remotion/google-fonts/Figtree';
 
 // Figtree at the two weights actually used: 400 for body copy, 600 for
 // headings (per CI — "single family, weight ~600 for headings").
-const { fontFamily } = loadFont({ weights: ['400', '600'] });
+// loadFont(style, options) — style ("normal"/"italic") is the FIRST arg;
+// passing the options object there instead fails at render time with
+// "does not have a style [object Object]".
+const { fontFamily } = loadFont('normal', { weights: ['400', '600'] });
 
 export const theme = {
   colors: {
