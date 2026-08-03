@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PropertyFormSchema, MEDIA_SLOTS } from '@/lib/schema';
+import { PropertyFormSchema, getMediaSlots } from '@/lib/schema';
 import { renderVideoForJob } from '@/lib/render';
 
 export const runtime = 'nodejs';
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   const aspect = formData.get('aspect') === 'vertical' ? 'vertical' : 'landscape';
+  const mediaSlots = getMediaSlots(propertyParsed.propertyCategory);
 
   const job = await prisma.job.create({
     data: {
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
   await fs.mkdir(jobPhotoDir, { recursive: true });
 
   const media: Record<string, string> = {};
-  for (const slot of MEDIA_SLOTS) {
+  for (const slot of mediaSlots) {
     const file = formData.get(`photo_${slot.key}`);
     if (!(file instanceof File)) {
       await prisma.job.update({
