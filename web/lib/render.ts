@@ -38,7 +38,7 @@ export async function renderVideoForJob(jobId: string): Promise<void> {
 
   const property = JSON.parse(job.propertyJson);
   const media = JSON.parse(job.mediaJson);
-  const brand = { accentColor: '#3B6EA5', accentDeep: '#1B2A41' };
+  const brand = { accentColor: '#39EAE6', accentDeep: '#0B3B3A' }; // Midpoint CI
   const inputProps = { property, media, brand };
 
   const compositionId = job.aspect === 'vertical' ? 'PropertyPromo' : 'PropertyPromoLandscape';
