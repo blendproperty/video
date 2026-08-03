@@ -59,6 +59,7 @@ const CATEGORIES_WITH_SECONDARY_AREA: PropertyCategory[] = ['warehouse', 'land']
 
 type ListingImage = { url: string | null; altText: string | null; position: number; isHero: boolean };
 type ListingContact = { name: string | null; jobTitle: string | null; phone: string | null; whatsapp: string | null; email: string | null };
+type ListingVideo = { id: string; status: string; createdAt: string };
 type Listing = {
   id: string;
   name: string;
@@ -74,6 +75,9 @@ type Listing = {
   images: ListingImage[];
   contacts: ListingContact[];
   listingUrl: string;
+  // Any videos already generated for this listing (agency-wide) — lets the
+  // picker warn before generating a duplicate.
+  videos: ListingVideo[];
 };
 
 // Photo slots can now be filled either by uploading a file, or by picking
@@ -97,8 +101,12 @@ export default function NewJobPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [listingsLoading, setListingsLoading] = useState(false);
   const [listingsError, setListingsError] = useState<string | null>(null);
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [selectedListingName, setSelectedListingName] = useState<string | null>(null);
   const [listingImages, setListingImages] = useState<ListingImage[]>([]);
+  // Set when someone clicks a listing that already has video(s) — shows a
+  // confirmation panel instead of jumping straight into the wizard.
+  const [pendingListing, setPendingListing] = useState<Listing | null>(null);
 
   const step = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
@@ -227,9 +235,22 @@ export default function NewJobPage() {
 
     setListingImages(listing.images.filter((img) => img.url));
     setPhotos({});
+    setSelectedListingId(listing.id);
     setSelectedListingName(listing.name);
+    setPendingListing(null);
     setError(null);
     setStepIndex(1);
+  };
+
+  // Listings with existing video(s) get a confirmation step instead of
+  // jumping straight into the wizard, so nobody generates a duplicate by
+  // accident.
+  const handleListingClick = (listing: Listing) => {
+    if (listing.videos && listing.videos.length > 0) {
+      setPendingListing(listing);
+      return;
+    }
+    applyListing(listing);
   };
 
   const validateStep = (s: Step): string | null => {
@@ -323,6 +344,8 @@ export default function NewJobPage() {
     const fd = new FormData();
     fd.append('property', JSON.stringify(property));
     fd.append('aspect', aspect);
+    if (selectedListingId) fd.append('listingId', selectedListingId);
+    if (selectedListingName) fd.append('listingName', selectedListingName);
     for (const slot of mediaSlots) {
       const selection = photos[slot.key];
       if (selection?.type === 'file') {
@@ -419,13 +442,19 @@ export default function NewJobPage() {
                   <div className="listing-results">
                     {listings.map((listing) => {
                       const hero = listing.images.find((img) => img.isHero) ?? listing.images[0];
+                      const videoCount = listing.videos?.length ?? 0;
                       return (
                         <button
                           type="button"
                           key={listing.id}
                           className="listing-card"
-                          onClick={() => applyListing(listing)}
+                          onClick={() => handleListingClick(listing)}
                         >
+                          {videoCount > 0 && (
+                            <span className="listing-video-badge">
+                              ✓ {videoCount} video{videoCount > 1 ? 's' : ''}
+                            </span>
+                          )}
                           {hero?.url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={hero.url} alt="" className="listing-card-thumb" />
@@ -760,6 +789,43 @@ export default function NewJobPage() {
           )}
         </div>
       </form>
+
+      {pendingListing && (
+        <div className="modal-overlay" onClick={() => setPendingListing(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Already generated for {pendingListing.name}</h3>
+            <p className="hint-text">
+              {pendingListing.videos.length} video{pendingListing.videos.length > 1 ? 's' : ''} already exist
+              for this listing:
+            </p>
+            <ul className="existing-videos-list">
+              {pendingListing.videos.map((v) => (
+                <li key={v.id}>
+                  <a href={`/jobs/${v.id}`} target="_blank" rel="noreferrer">
+                    <span>{new Date(v.createdAt).toLocaleDateString()}</span>
+                    <span className={`status status-${v.status.toLowerCase()}`}>{v.status}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="modal-actions">
+              <button type="button" className="secondary-button" onClick={() => setPendingListing(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => {
+                  const listing = pendingListing;
+                  applyListing(listing);
+                }}
+              >
+                Generate new video anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
