@@ -34,7 +34,7 @@ const Line: React.FC<{
             opacity,
             fontFamily: theme.fonts.heading,
             fontSize,
-            fontWeight: 700,
+            fontWeight: theme.weights.heading,
             color: theme.colors.textPrimary,
           }}
         >
@@ -56,7 +56,7 @@ const Line: React.FC<{
           opacity,
           fontFamily: theme.fonts.heading,
           fontSize,
-          fontWeight: 700,
+          fontWeight: theme.weights.heading,
           color: theme.colors.textPrimary,
         }}
       >
