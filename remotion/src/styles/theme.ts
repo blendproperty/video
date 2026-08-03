@@ -1,35 +1,52 @@
 // src/styles/theme.ts
 //
 // Central place for all colours, fonts and spacing used across the promo.
-// No official Midpoint CI file has been supplied yet, so these are a
-// professional, neutral fallback picked to match the building's own
-// navy/white cladding. Replace the hex values below once you have the real
-// brand guide and every scene updates automatically.
+// Values here are Midpoint's actual CI (as distinct from Blend's calmer
+// black/green look): cyan-black base, bright cyan primary accent, reflective
+// orange for secondary/CTA moments, Figtree as the single type family.
+// Every scene reads from here, so this one file drives the whole video's
+// look.
+
+import { loadFont } from '@remotion/google-fonts/Figtree';
+
+// Figtree at the two weights actually used: 400 for body copy, 600 for
+// headings (per CI — "single family, weight ~600 for headings").
+const { fontFamily } = loadFont({ weights: ['400', '600'] });
 
 export const theme = {
   colors: {
-    background: '#0B0F14',
-    backgroundAlt: '#11161D',
+    background: '#082121', // cyan-black
+    backgroundAlt: '#0D2E2E', // slightly lifted panel/alt background
 
     textPrimary: '#FFFFFF',
-    textSecondary: 'rgba(255,255,255,0.72)',
-    textMuted: 'rgba(255,255,255,0.5)',
+    textSecondary: '#CACDD5', // grey-200
+    textMuted: '#6D7280', // grey-400
 
-    accent: '#3B6EA5',
-    accentDeep: '#1B2A41',
+    accent: '#39EAE6', // cyan — primary highlight, used heavily
+    accentDeep: '#0B3B3A', // deep cyan-black-adjacent, for glows/shadows
 
-    secondaryAccent: '#C9A227',
+    secondaryAccent: '#FE6C23', // reflective orange — secondary accent / CTA
 
-    panelOverlay: 'rgba(11,15,20,0.55)',
+    panelOverlay: 'rgba(8,33,33,0.6)',
     gradientBottom:
-      'linear-gradient(to bottom, rgba(11,15,20,0) 0%, rgba(11,15,20,0.85) 100%)',
+      'linear-gradient(to bottom, rgba(8,33,33,0) 0%, rgba(8,33,33,0.9) 100%)',
     gradientTop:
-      'linear-gradient(to top, rgba(11,15,20,0) 0%, rgba(11,15,20,0.65) 100%)',
+      'linear-gradient(to top, rgba(8,33,33,0) 0%, rgba(8,33,33,0.7) 100%)',
   },
 
   fonts: {
-    heading: '"Helvetica Neue", Arial, sans-serif',
-    body: '"Helvetica Neue", Arial, sans-serif',
+    heading: `"${fontFamily}", Arial, sans-serif`,
+    body: `"${fontFamily}", Arial, sans-serif`,
+  },
+
+  weights: {
+    heading: 600, // CI calls for ~600 on headings, not 700/800
+    body: 400,
+  },
+
+  radius: {
+    md: 20, // CI's standard corner radius
+    pill: 999,
   },
 
   layout: {
