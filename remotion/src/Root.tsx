@@ -15,7 +15,8 @@ const defaultProps = {
   property: defaultProperty,
   media: defaultMedia,
   // brand override isn't wired into components yet — reserved for later.
-  brand: { accentColor: '#3B6EA5', accentDeep: '#1B2A41' },
+  // Values match Midpoint's actual CI (cyan accent / deep cyan-black).
+  brand: { accentColor: '#39EAE6', accentDeep: '#0B3B3A' },
 };
 
 export const RemotionRoot: React.FC = () => {
