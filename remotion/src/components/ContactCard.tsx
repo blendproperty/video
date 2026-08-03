@@ -32,7 +32,7 @@ export const ContactCard: React.FC<{ property: PropertyInput; delay?: number }> 
         flexDirection: 'column',
         gap: 18,
         padding: '32px 36px',
-        borderRadius: 20,
+        borderRadius: theme.radius.md,
         backgroundColor: theme.colors.panelOverlay,
         backdropFilter: 'blur(8px)',
         border: `1px solid rgba(255,255,255,0.12)`,
@@ -43,8 +43,8 @@ export const ContactCard: React.FC<{ property: PropertyInput; delay?: number }> 
         style={{
           fontFamily: theme.fonts.heading,
           fontSize: 40,
-          fontWeight: 800,
-          color: theme.colors.accent,
+          fontWeight: theme.weights.heading,
+          color: theme.colors.secondaryAccent,
           letterSpacing: 2,
           textTransform: 'uppercase',
         }}
@@ -55,9 +55,9 @@ export const ContactCard: React.FC<{ property: PropertyInput; delay?: number }> 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <span
           style={{
-            fontFamily: theme.fonts.body,
+            fontFamily: theme.fonts.heading,
             fontSize: 32,
-            fontWeight: 700,
+            fontWeight: theme.weights.heading,
             color: theme.colors.textPrimary,
           }}
         >
