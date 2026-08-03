@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   CATEGORY_PRESETS,
   PROPERTY_CATEGORIES,
@@ -372,7 +373,16 @@ export default function NewJobPage() {
 
   return (
     <div className="page">
-      <h1>New property video</h1>
+      <div className="page-header">
+        <div className="brand-mark">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/midpoint-mark.svg" alt="Midpoint" />
+          <h1 style={{ fontSize: 20, margin: 0 }}>New property video</h1>
+        </div>
+        <Link href="/" className="link-button">
+          ← Back to dashboard
+        </Link>
+      </div>
 
       <ol className="wizard-steps">
         {STEPS.map((s, i) => (
