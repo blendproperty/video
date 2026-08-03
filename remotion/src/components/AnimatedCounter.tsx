@@ -46,7 +46,7 @@ export const AnimatedCounter: React.FC<{
       style={{
         fontFamily: theme.fonts.heading,
         fontSize,
-        fontWeight: 800,
+        fontWeight: theme.weights.heading,
         color: theme.colors.textPrimary,
         fontVariantNumeric: 'tabular-nums',
         lineHeight: 1,
