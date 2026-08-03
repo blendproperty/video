@@ -2,25 +2,34 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MEDIA_SLOTS } from '@/lib/schema';
+import {
+  CATEGORY_PRESETS,
+  PROPERTY_CATEGORIES,
+  PROPERTY_CATEGORY_LABELS,
+  getMediaSlots,
+  type PropertyCategory,
+} from '@/lib/schema';
 
 const emptyProperty = {
+  propertyCategory: 'warehouse' as PropertyCategory,
   propertyName: '',
   propertyType: '',
   location: '',
   address: '',
-  totalGla: '',
-  warehouseArea: '',
-  officeArea: '',
-  yardArea: '',
+  listingLabel: CATEGORY_PRESETS.warehouse.listingLabel,
+  totalArea: '',
+  totalAreaLabel: CATEGORY_PRESETS.warehouse.totalAreaLabel,
+  secondaryArea: '',
+  secondaryAreaLabel: CATEGORY_PRESETS.warehouse.secondaryAreaLabel,
   monthlyRental: '',
   ratePerSquareMetre: '',
   excludingVat: true,
   availability: 'Available now',
-  buildingGrade: '',
+  buildingGrade: CATEGORY_PRESETS.warehouse.buildingGrade,
   headline: '',
   description: '',
-  stats: { heightToEavesMetres: '', loadBearingKgPerSqm: '', powerMva: '' },
+  stats: CATEGORY_PRESETS.warehouse.stats.map((s) => ({ ...s })),
+  featuresHeadline: CATEGORY_PRESETS.warehouse.featuresHeadline,
   featuresText: '',
   contact: { name: '', title: '', phone: '', email: '' },
   listingUrl: '',
@@ -30,7 +39,7 @@ const emptyProperty = {
 
 type FormState = typeof emptyProperty;
 
-const STEPS = ['Format', 'Property details', 'Story & contact', 'Photos'] as const;
+const STEPS = ['Category & format', 'Property details', 'Story & contact', 'Photos'] as const;
 type Step = (typeof STEPS)[number];
 
 export default function NewJobPage() {
@@ -44,6 +53,7 @@ export default function NewJobPage() {
 
   const step = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
+  const mediaSlots = getMediaSlots(form.propertyCategory);
 
   const update = (path: string, value: unknown) => {
     setForm((prev) => {
@@ -56,6 +66,31 @@ export default function NewJobPage() {
     });
   };
 
+  const updateStat = (index: number, field: 'label' | 'value', value: string) => {
+    setForm((prev) => {
+      const next = structuredClone(prev);
+      next.stats[index][field] = value;
+      return next;
+    });
+  };
+
+  const onCategoryChange = (category: PropertyCategory) => {
+    const preset = CATEGORY_PRESETS[category];
+    setForm((prev) => ({
+      ...prev,
+      propertyCategory: category,
+      listingLabel: preset.listingLabel,
+      totalAreaLabel: preset.totalAreaLabel,
+      secondaryAreaLabel: preset.secondaryAreaLabel,
+      buildingGrade: preset.buildingGrade,
+      featuresHeadline: preset.featuresHeadline,
+      stats: preset.stats.map((s) => ({ ...s })),
+    }));
+    // Photos already picked don't necessarily map to the new category's
+    // slot guidance — clear them so nothing gets silently mismatched.
+    setPhotos({});
+  };
+
   const validateStep = (s: Step): string | null => {
     if (s === 'Property details') {
       const required: [string, unknown][] = [
@@ -65,10 +100,8 @@ export default function NewJobPage() {
         ['Address', form.address],
         ['Building grade', form.buildingGrade],
         ['Availability', form.availability],
-        ['Total GLA', form.totalGla],
-        ['Warehouse area', form.warehouseArea],
-        ['Office area', form.officeArea],
-        ['Yard area', form.yardArea],
+        [form.totalAreaLabel || 'Total area', form.totalArea],
+        [form.secondaryAreaLabel || 'Secondary area', form.secondaryArea],
         ['Monthly rental', form.monthlyRental],
         ['Rate per m²', form.ratePerSquareMetre],
       ];
@@ -77,11 +110,10 @@ export default function NewJobPage() {
     }
     if (s === 'Story & contact') {
       const required: [string, unknown][] = [
+        ['Listing label', form.listingLabel],
         ['Headline', form.headline],
         ['Description', form.description],
-        ['Height to eaves', form.stats.heightToEavesMetres],
-        ['Load bearing', form.stats.loadBearingKgPerSqm],
-        ['Power', form.stats.powerMva],
+        ['Features headline', form.featuresHeadline],
         ['Features', form.featuresText],
         ['Contact name', form.contact.name],
         ['Contact title', form.contact.title],
@@ -93,6 +125,8 @@ export default function NewJobPage() {
       ];
       const missing = required.filter(([, v]) => v === '' || v === null || v === undefined);
       if (missing.length > 0) return `Please fill in: ${missing.map(([label]) => label).join(', ')}`;
+      const statsMissing = form.stats.some((s) => !s.label || !s.value);
+      if (statsMissing) return 'Please fill in all 3 feature stats (label and value).';
     }
     return null;
   };
@@ -116,7 +150,7 @@ export default function NewJobPage() {
     e.preventDefault();
     setError(null);
 
-    const missing = MEDIA_SLOTS.filter((s) => !photos[s.key]);
+    const missing = mediaSlots.filter((s) => !photos[s.key]);
     if (missing.length > 0) {
       setError(`Please upload a photo for: ${missing.map((m) => m.label).join(', ')}`);
       return;
@@ -126,17 +160,10 @@ export default function NewJobPage() {
 
     const property = {
       ...form,
-      totalGla: Number(form.totalGla),
-      warehouseArea: Number(form.warehouseArea),
-      officeArea: Number(form.officeArea),
-      yardArea: Number(form.yardArea),
+      totalArea: Number(form.totalArea),
+      secondaryArea: Number(form.secondaryArea),
       monthlyRental: Number(form.monthlyRental),
       ratePerSquareMetre: Number(form.ratePerSquareMetre),
-      stats: {
-        heightToEavesMetres: Number(form.stats.heightToEavesMetres),
-        loadBearingKgPerSqm: Number(form.stats.loadBearingKgPerSqm),
-        powerMva: Number(form.stats.powerMva),
-      },
       features: form.featuresText
         .split(',')
         .map((f) => f.trim())
@@ -147,7 +174,7 @@ export default function NewJobPage() {
     const fd = new FormData();
     fd.append('property', JSON.stringify(property));
     fd.append('aspect', aspect);
-    for (const slot of MEDIA_SLOTS) {
+    for (const slot of mediaSlots) {
       fd.append(`photo_${slot.key}`, photos[slot.key] as File);
     }
 
@@ -164,7 +191,7 @@ export default function NewJobPage() {
     router.push(`/jobs/${data.id}`);
   };
 
-  const photosUploaded = MEDIA_SLOTS.filter((s) => photos[s.key]).length;
+  const photosUploaded = mediaSlots.filter((s) => photos[s.key]).length;
 
   return (
     <div className="page">
@@ -188,18 +215,37 @@ export default function NewJobPage() {
         onSubmit={isLastStep ? onSubmit : (e) => e.preventDefault()}
         className="job-form"
       >
-        {step === 'Format' && (
-          <fieldset>
-            <legend>Format</legend>
-            <label className="radio-row">
-              <input type="radio" checked={aspect === 'landscape'} onChange={() => setAspect('landscape')} />
-              Landscape (16:9, YouTube)
-            </label>
-            <label className="radio-row">
-              <input type="radio" checked={aspect === 'vertical'} onChange={() => setAspect('vertical')} />
-              Vertical (9:16, Reels/Stories)
-            </label>
-          </fieldset>
+        {step === 'Category & format' && (
+          <>
+            <fieldset>
+              <legend>Property category</legend>
+              {PROPERTY_CATEGORIES.map((cat) => (
+                <label key={cat} className="radio-row">
+                  <input
+                    type="radio"
+                    checked={form.propertyCategory === cat}
+                    onChange={() => onCategoryChange(cat)}
+                  />
+                  {PROPERTY_CATEGORY_LABELS[cat]}
+                </label>
+              ))}
+              <p className="hint-text">
+                Sets sensible defaults for labels and feature stats below — all still editable.
+              </p>
+            </fieldset>
+
+            <fieldset>
+              <legend>Format</legend>
+              <label className="radio-row">
+                <input type="radio" checked={aspect === 'landscape'} onChange={() => setAspect('landscape')} />
+                Landscape (16:9, YouTube)
+              </label>
+              <label className="radio-row">
+                <input type="radio" checked={aspect === 'vertical'} onChange={() => setAspect('vertical')} />
+                Vertical (9:16, Reels/Stories)
+              </label>
+            </fieldset>
+          </>
         )}
 
         {step === 'Property details' && (
@@ -232,28 +278,28 @@ export default function NewJobPage() {
               </label>
               <div className="field-grid">
                 <label>
-                  Total GLA (m²)
-                  <input type="number" value={form.totalGla} onChange={(e) => update('totalGla', e.target.value)} />
+                  {form.totalAreaLabel || 'Total area'} (m²)
+                  <input type="number" value={form.totalArea} onChange={(e) => update('totalArea', e.target.value)} />
                 </label>
                 <label>
-                  Warehouse area (m²)
+                  Label for above
+                  <input value={form.totalAreaLabel} onChange={(e) => update('totalAreaLabel', e.target.value)} />
+                </label>
+                <label>
+                  Secondary area (m²)
                   <input
                     type="number"
-                    value={form.warehouseArea}
-                    onChange={(e) => update('warehouseArea', e.target.value)}
+                    value={form.secondaryArea}
+                    onChange={(e) => update('secondaryArea', e.target.value)}
                   />
                 </label>
                 <label>
-                  Office area (m²)
+                  Caption for above
                   <input
-                    type="number"
-                    value={form.officeArea}
-                    onChange={(e) => update('officeArea', e.target.value)}
+                    value={form.secondaryAreaLabel}
+                    onChange={(e) => update('secondaryAreaLabel', e.target.value)}
+                    placeholder="e.g. of clear-span warehouse space"
                   />
-                </label>
-                <label>
-                  Yard area (m²)
-                  <input type="number" value={form.yardArea} onChange={(e) => update('yardArea', e.target.value)} />
                 </label>
               </div>
             </fieldset>
@@ -295,6 +341,10 @@ export default function NewJobPage() {
             <fieldset>
               <legend>Additional info</legend>
               <label>
+                Listing label (shown top-left in the opening scene)
+                <input value={form.listingLabel} onChange={(e) => update('listingLabel', e.target.value)} placeholder="To Let / For Sale" />
+              </label>
+              <label>
                 Headline (use a line break for a two-line headline)
                 <textarea value={form.headline} onChange={(e) => update('headline', e.target.value)} />
               </label>
@@ -302,35 +352,31 @@ export default function NewJobPage() {
                 Description
                 <textarea value={form.description} onChange={(e) => update('description', e.target.value)} />
               </label>
-              <div className="field-grid">
-                <label>
-                  Height to eaves (m)
-                  <input
-                    type="number"
-                    value={form.stats.heightToEavesMetres}
-                    onChange={(e) => update('stats.heightToEavesMetres', e.target.value)}
-                  />
-                </label>
-                <label>
-                  Load bearing (kg/m²)
-                  <input
-                    type="number"
-                    value={form.stats.loadBearingKgPerSqm}
-                    onChange={(e) => update('stats.loadBearingKgPerSqm', e.target.value)}
-                  />
-                </label>
-                <label>
-                  Power (MVA)
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={form.stats.powerMva}
-                    onChange={(e) => update('stats.powerMva', e.target.value)}
-                  />
-                </label>
+
+              <p className="hint-text">3 feature stats, shown as badges (e.g. "Height to eaves" / "15m"):</p>
+              <div className="stats-grid">
+                {form.stats.map((stat, i) => (
+                  <div key={i} className="stats-row">
+                    <input
+                      value={stat.label}
+                      onChange={(e) => updateStat(i, 'label', e.target.value)}
+                      placeholder="Label"
+                    />
+                    <input
+                      value={stat.value}
+                      onChange={(e) => updateStat(i, 'value', e.target.value)}
+                      placeholder="Value"
+                    />
+                  </div>
+                ))}
               </div>
+
               <label>
-                Features (comma-separated)
+                Features headline (e.g. "Built for business")
+                <input value={form.featuresHeadline} onChange={(e) => update('featuresHeadline', e.target.value)} />
+              </label>
+              <label>
+                Features (comma-separated — first 3 shown as badges)
                 <input
                   value={form.featuresText}
                   onChange={(e) => update('featuresText', e.target.value)}
@@ -382,10 +428,10 @@ export default function NewJobPage() {
         {step === 'Photos' && (
           <fieldset>
             <legend>
-              Photos — assign one to each scene ({photosUploaded}/{MEDIA_SLOTS.length})
+              Photos — assign one to each scene ({photosUploaded}/{mediaSlots.length})
             </legend>
             <div className="photo-grid">
-              {MEDIA_SLOTS.map((slot) => {
+              {mediaSlots.map((slot) => {
                 const file = photos[slot.key];
                 return (
                   <label key={slot.key} className={file ? 'photo-slot photo-slot-filled' : 'photo-slot'}>
