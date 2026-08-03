@@ -49,6 +49,125 @@ body {
   height: 28px;
 }
 
+/* --- Sign-in screen ------------------------------------------------------- */
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+}
+
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left visual panel — communicates "this is a video generator" at a
+   glance, entirely CSS/SVG (no raster assets to keep in sync). */
+.auth-visual {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px;
+  background: linear-gradient(160deg, var(--mp-cyan-black) 0%, var(--mp-cyan-black-alt) 100%);
+  border-right: 1px solid rgba(57, 234, 230, 0.12);
+}
+
+@media (max-width: 900px) {
+  .auth-visual {
+    min-height: 320px;
+    border-right: none;
+    border-bottom: 1px solid rgba(57, 234, 230, 0.12);
+  }
+}
+
+.auth-visual-glow {
+  position: absolute;
+  top: -30%;
+  right: -20%;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(57, 234, 230, 0.28) 0%, rgba(57, 234, 230, 0) 70%);
+  pointer-events: none;
+}
+
+.auth-visual::after {
+  content: '';
+  position: absolute;
+  bottom: -25%;
+  left: -15%;
+  width: 55%;
+  height: 55%;
+  background: radial-gradient(circle, rgba(254, 108, 35, 0.18) 0%, rgba(254, 108, 35, 0) 70%);
+  pointer-events: none;
+}
+
+.auth-visual-logo {
+  position: relative;
+  height: 32px;
+  z-index: 1;
+}
+
+.auth-visual-content {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+}
+
+.auth-play-badge {
+  margin-bottom: 24px;
+  animation: auth-badge-pulse 3.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-play-badge {
+    animation: none;
+  }
+}
+
+@keyframes auth-badge-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 0 rgba(57, 234, 230, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(57, 234, 230, 0.45));
+  }
+}
+
+.auth-visual-title {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: var(--mp-white);
+}
+
+.auth-visual-copy {
+  font-size: 15px;
+  color: var(--mp-grey-200);
+  margin: 0 0 32px;
+  line-height: 1.5;
+}
+
+.auth-filmstrip {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-filmstrip span {
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(57, 234, 230, 0.08);
+  border: 1px solid rgba(57, 234, 230, 0.25);
+}
+
+.auth-filmstrip span:nth-child(2) { background: rgba(254, 108, 35, 0.1); border-color: rgba(254, 108, 35, 0.3); }
+.auth-filmstrip span:nth-child(4) { background: rgba(254, 108, 35, 0.1); border-color: rgba(254, 108, 35, 0.3); }
+
 .auth-page {
   min-height: 100vh;
   display: flex;
