@@ -296,6 +296,7 @@ legend {
 }
 
 .listing-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -332,6 +333,85 @@ legend {
 
 .listing-card-body small {
   color: var(--mp-grey-400);
+}
+
+/* Badge on a listing card that already has one or more generated videos —
+   shown in the picker so nobody generates a duplicate without noticing. */
+.listing-video-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--mp-cyan);
+  color: var(--mp-cyan-black);
+}
+
+/* --- Confirm-before-regenerate modal -------------------------------------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 33, 33, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 24px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--mp-cyan-black-alt);
+  border: 1px solid rgba(57, 234, 230, 0.3);
+  border-radius: var(--mp-radius);
+  padding: 28px;
+}
+
+.modal-card h3 {
+  margin: 0 0 4px;
+  color: var(--mp-cyan);
+}
+
+.existing-videos-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.existing-videos-list a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--mp-cyan-black);
+  color: var(--mp-white);
+  text-decoration: none;
+  border: 1px solid rgba(202, 205, 213, 0.15);
+  font-size: 13px;
+}
+
+.existing-videos-list a:hover {
+  border-color: var(--mp-cyan);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 /* --- Photo upload / gallery-pick grid ------------------------------------ */
