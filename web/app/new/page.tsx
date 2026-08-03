@@ -39,7 +39,40 @@ const emptyProperty = {
 
 type FormState = typeof emptyProperty;
 
-const STEPS = ['Category & format', 'Property details', 'Story & contact', 'Photos'] as const;
+// Maps listings-blend's PropertyType enum onto our 3 video categories.
+const PROPERTY_TYPE_TO_CATEGORY: Record<string, PropertyCategory> = {
+  OFFICE: 'commercial',
+  RETAIL: 'commercial',
+  MIXED_USE: 'commercial',
+  INDUSTRIAL: 'warehouse',
+  YARD: 'land',
+  LAND: 'land',
+};
+
+type ListingImage = { url: string | null; altText: string | null; position: number; isHero: boolean };
+type ListingContact = { name: string | null; jobTitle: string | null; phone: string | null; whatsapp: string | null; email: string | null };
+type Listing = {
+  id: string;
+  name: string;
+  propertyType: string;
+  availability: string | null;
+  gla: number | null;
+  ratePerM2: number | null;
+  monthlyRental: number | null;
+  description: string | null;
+  summary: string | null;
+  features: string[];
+  location: { addressLine1: string | null; suburb: string; city: string; province: string };
+  images: ListingImage[];
+  contacts: ListingContact[];
+  listingUrl: string;
+};
+
+// Photo slots can now be filled either by uploading a file, or by picking
+// one of a selected listing's existing photos (no re-upload needed).
+type PhotoSelection = { type: 'file'; file: File } | { type: 'url'; url: string };
+
+const STEPS = ['Choose listing', 'Category & format', 'Property details', 'Story & contact', 'Photos'] as const;
 type Step = (typeof STEPS)[number];
 
 export default function NewJobPage() {
@@ -47,9 +80,17 @@ export default function NewJobPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [form, setForm] = useState<FormState>(emptyProperty);
   const [aspect, setAspect] = useState<'landscape' | 'vertical'>('landscape');
-  const [photos, setPhotos] = useState<Record<string, File | null>>({});
+  const [photos, setPhotos] = useState<Record<string, PhotoSelection | undefined>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [source, setSource] = useState<'unset' | 'listing' | 'manual'>('unset');
+  const [listingSearch, setListingSearch] = useState('');
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [listingsLoading, setListingsLoading] = useState(false);
+  const [listingsError, setListingsError] = useState<string | null>(null);
+  const [selectedListingName, setSelectedListingName] = useState<string | null>(null);
+  const [listingImages, setListingImages] = useState<ListingImage[]>([]);
 
   const step = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
@@ -86,12 +127,91 @@ export default function NewJobPage() {
       featuresHeadline: preset.featuresHeadline,
       stats: preset.stats.map((s) => ({ ...s })),
     }));
-    // Photos already picked don't necessarily map to the new category's
-    // slot guidance — clear them so nothing gets silently mismatched.
+  };
+
+  const loadListings = async (search?: string) => {
+    setListingsLoading(true);
+    setListingsError(null);
+    try {
+      const url = search ? `/api/listings?search=${encodeURIComponent(search)}` : '/api/listings';
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) {
+        setListingsError(
+          data.error === 'not_configured'
+            ? 'Listings integration isn’t set up yet — switch to manual entry below.'
+            : data.details || 'Could not load listings.',
+        );
+        setListings([]);
+        return;
+      }
+      setListings(data.listings ?? []);
+    } catch {
+      setListingsError('Could not reach the listings service.');
+    } finally {
+      setListingsLoading(false);
+    }
+  };
+
+  const chooseSource = (choice: 'listing' | 'manual') => {
+    setSource(choice);
+    if (choice === 'listing' && listings.length === 0 && !listingsLoading) {
+      loadListings();
+    }
+    if (choice === 'manual') {
+      setStepIndex(1);
+    }
+  };
+
+  const applyListing = (listing: Listing) => {
+    const category = PROPERTY_TYPE_TO_CATEGORY[listing.propertyType] ?? 'warehouse';
+    const preset = CATEGORY_PRESETS[category];
+    const primaryContact = listing.contacts[0];
+
+    setForm((prev) => ({
+      ...prev,
+      propertyCategory: category,
+      listingLabel: preset.listingLabel,
+      totalAreaLabel: preset.totalAreaLabel,
+      secondaryAreaLabel: preset.secondaryAreaLabel,
+      buildingGrade: preset.buildingGrade,
+      featuresHeadline: preset.featuresHeadline,
+      stats: preset.stats.map((s) => ({ ...s })),
+      propertyName: listing.name,
+      propertyType: listing.propertyType,
+      location: [listing.location.suburb, listing.location.city].filter(Boolean).join(', '),
+      address:
+        listing.location.addressLine1 ||
+        [listing.location.suburb, listing.location.city].filter(Boolean).join(', '),
+      totalArea: listing.gla != null ? String(listing.gla) : prev.totalArea,
+      monthlyRental: listing.monthlyRental != null ? String(listing.monthlyRental) : prev.monthlyRental,
+      ratePerSquareMetre: listing.ratePerM2 != null ? String(listing.ratePerM2) : prev.ratePerSquareMetre,
+      availability: listing.availability || prev.availability,
+      description: listing.description || listing.summary || prev.description,
+      featuresText: listing.features.length > 0 ? listing.features.join(', ') : prev.featuresText,
+      contact: primaryContact
+        ? {
+            name: primaryContact.name || '',
+            title: primaryContact.jobTitle || '',
+            phone: primaryContact.phone || primaryContact.whatsapp || '',
+            email: primaryContact.email || '',
+          }
+        : prev.contact,
+      listingUrl: listing.listingUrl.replace(/^https?:\/\//, ''),
+      listingUrlFull: listing.listingUrl,
+    }));
+
+    setListingImages(listing.images.filter((img) => img.url));
     setPhotos({});
+    setSelectedListingName(listing.name);
+    setError(null);
+    setStepIndex(1);
   };
 
   const validateStep = (s: Step): string | null => {
+    if (s === 'Choose listing' && source === 'unset') {
+      return 'Choose a listing, or continue with manual entry.';
+    }
     if (s === 'Property details') {
       const required: [string, unknown][] = [
         ['Property name', form.propertyName],
@@ -152,7 +272,7 @@ export default function NewJobPage() {
 
     const missing = mediaSlots.filter((s) => !photos[s.key]);
     if (missing.length > 0) {
-      setError(`Please upload a photo for: ${missing.map((m) => m.label).join(', ')}`);
+      setError(`Please choose a photo for: ${missing.map((m) => m.label).join(', ')}`);
       return;
     }
 
@@ -175,7 +295,12 @@ export default function NewJobPage() {
     fd.append('property', JSON.stringify(property));
     fd.append('aspect', aspect);
     for (const slot of mediaSlots) {
-      fd.append(`photo_${slot.key}`, photos[slot.key] as File);
+      const selection = photos[slot.key];
+      if (selection?.type === 'file') {
+        fd.append(`photo_${slot.key}`, selection.file);
+      } else if (selection?.type === 'url') {
+        fd.append(`photo_url_${slot.key}`, selection.url);
+      }
     }
 
     const res = await fetch('/api/jobs', { method: 'POST', body: fd });
@@ -191,7 +316,7 @@ export default function NewJobPage() {
     router.push(`/jobs/${data.id}`);
   };
 
-  const photosUploaded = mediaSlots.filter((s) => photos[s.key]).length;
+  const photosAssigned = mediaSlots.filter((s) => photos[s.key]).length;
 
   return (
     <div className="page">
@@ -215,8 +340,101 @@ export default function NewJobPage() {
         onSubmit={isLastStep ? onSubmit : (e) => e.preventDefault()}
         className="job-form"
       >
+        {step === 'Choose listing' && (
+          <fieldset>
+            <legend>Where should this video come from?</legend>
+
+            {source === 'unset' && (
+              <div className="source-choice-grid">
+                <button type="button" className="source-choice-card" onClick={() => chooseSource('listing')}>
+                  <strong>Pull from a listing</strong>
+                  <span>Pick an existing listing from listings.blendproperty.co.za — details and photos come in automatically.</span>
+                </button>
+                <button type="button" className="source-choice-card" onClick={() => chooseSource('manual')}>
+                  <strong>Enter manually</strong>
+                  <span>Fill everything in yourself over the next few steps.</span>
+                </button>
+              </div>
+            )}
+
+            {source === 'listing' && (
+              <>
+                <div className="listing-search-row">
+                  <input
+                    value={listingSearch}
+                    onChange={(e) => setListingSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        loadListings(listingSearch);
+                      }
+                    }}
+                    placeholder="Search by name, suburb, or reference…"
+                  />
+                  <button type="button" className="secondary-button" onClick={() => loadListings(listingSearch)}>
+                    Search
+                  </button>
+                </div>
+
+                {listingsLoading && <p className="hint-text">Loading listings…</p>}
+                {listingsError && (
+                  <>
+                    <p className="error">{listingsError}</p>
+                    <button type="button" className="secondary-button" onClick={() => chooseSource('manual')}>
+                      Switch to manual entry
+                    </button>
+                  </>
+                )}
+
+                {!listingsLoading && !listingsError && (
+                  <div className="listing-results">
+                    {listings.map((listing) => {
+                      const hero = listing.images.find((img) => img.isHero) ?? listing.images[0];
+                      return (
+                        <button
+                          type="button"
+                          key={listing.id}
+                          className="listing-card"
+                          onClick={() => applyListing(listing)}
+                        >
+                          {hero?.url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={hero.url} alt="" className="listing-card-thumb" />
+                          ) : (
+                            <div className="listing-card-thumb listing-card-thumb-empty" />
+                          )}
+                          <div className="listing-card-body">
+                            <strong>{listing.name}</strong>
+                            <small>
+                              {[listing.location.suburb, listing.location.city].filter(Boolean).join(', ')}
+                            </small>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    {listings.length === 0 && <p className="hint-text">No listings found.</p>}
+                  </div>
+                )}
+
+                <p style={{ marginTop: 16 }}>
+                  <button type="button" className="link-button" onClick={() => chooseSource('manual')}>
+                    Skip — enter manually instead
+                  </button>
+                </p>
+              </>
+            )}
+
+            {source === 'manual' && (
+              <p className="hint-text">Manual entry selected — continue to the next step.</p>
+            )}
+          </fieldset>
+        )}
+
         {step === 'Category & format' && (
           <>
+            {selectedListingName && (
+              <p className="hint-text">Pulled from listing: <strong>{selectedListingName}</strong></p>
+            )}
             <fieldset>
               <legend>Property category</legend>
               {PROPERTY_CATEGORIES.map((cat) => (
@@ -428,24 +646,60 @@ export default function NewJobPage() {
         {step === 'Photos' && (
           <fieldset>
             <legend>
-              Photos — assign one to each scene ({photosUploaded}/{mediaSlots.length})
+              Photos — assign one to each scene ({photosAssigned}/{mediaSlots.length})
             </legend>
+            {listingImages.length > 0 && (
+              <p className="hint-text">
+                Click a photo from {selectedListingName ?? 'the listing'} for each scene below, or upload your own instead.
+              </p>
+            )}
             <div className="photo-grid">
               {mediaSlots.map((slot) => {
-                const file = photos[slot.key];
+                const selection = photos[slot.key];
+                const isFilled = !!selection;
                 return (
-                  <label key={slot.key} className={file ? 'photo-slot photo-slot-filled' : 'photo-slot'}>
+                  <div key={slot.key} className={isFilled ? 'photo-slot photo-slot-filled' : 'photo-slot'}>
                     <span>{slot.label}</span>
                     <small>{slot.hint}</small>
-                    {file && <small className="photo-slot-filename">{file.name}</small>}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setPhotos((prev) => ({ ...prev, [slot.key]: e.target.files?.[0] ?? null }))
-                      }
-                    />
-                  </label>
+
+                    {listingImages.length > 0 && (
+                      <div className="listing-thumb-row">
+                        {listingImages.map((img) => (
+                          <button
+                            type="button"
+                            key={img.url}
+                            className={
+                              selection?.type === 'url' && selection.url === img.url
+                                ? 'listing-thumb listing-thumb-selected'
+                                : 'listing-thumb'
+                            }
+                            onClick={() =>
+                              setPhotos((prev) => ({ ...prev, [slot.key]: { type: 'url', url: img.url as string } }))
+                            }
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img.url as string} alt="" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <label className="upload-fallback">
+                      {listingImages.length > 0 ? 'or upload your own:' : ''}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          setPhotos((prev) => ({
+                            ...prev,
+                            [slot.key]: file ? { type: 'file', file } : undefined,
+                          }));
+                        }}
+                      />
+                    </label>
+                    {selection?.type === 'file' && <small className="photo-slot-filename">{selection.file.name}</small>}
+                  </div>
                 );
               })}
             </div>
@@ -461,7 +715,7 @@ export default function NewJobPage() {
             </button>
           )}
           <div className="wizard-nav-spacer" />
-          {!isLastStep && (
+          {!isLastStep && step !== 'Choose listing' && (
             <button type="button" className="primary-button" onClick={goNext}>
               Next
             </button>
