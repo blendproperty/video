@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 interface JobRecord {
   id: string;
@@ -55,6 +56,9 @@ export default function JobStatusPage() {
   if (error) {
     return (
       <div className="page">
+        <p style={{ marginBottom: 16 }}>
+          <Link href="/" className="link-button">← Back to dashboard</Link>
+        </p>
         <p className="error">{error}</p>
       </div>
     );
@@ -73,6 +77,10 @@ export default function JobStatusPage() {
 
   return (
     <div className="page">
+      <p style={{ marginBottom: 16 }}>
+        <Link href="/" className="link-button">← Back to dashboard</Link>
+      </p>
+
       <h1>{property.propertyName}</h1>
 
       {job.status === 'PENDING' && <p>Queued…</p>}
@@ -86,6 +94,11 @@ export default function JobStatusPage() {
             <a href={videoSrc} download className="primary-button">
               Download MP4
             </a>
+          </p>
+          <p style={{ marginTop: 24 }}>
+            <Link href="/" className="secondary-button" style={{ display: 'inline-block', borderRadius: 20, padding: '12px 22px', textDecoration: 'none' }}>
+              ← Back to dashboard
+            </Link>
           </p>
         </div>
       )}

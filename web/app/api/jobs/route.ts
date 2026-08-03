@@ -34,11 +34,21 @@ export async function POST(req: NextRequest) {
   const aspect = formData.get('aspect') === 'vertical' ? 'vertical' : 'landscape';
   const mediaSlots = getMediaSlots(propertyParsed.propertyCategory);
 
+  // Set only when this job came from the "Choose listing" picker step —
+  // lets us warn on future visits that a video already exists for this
+  // listing, instead of silently letting someone generate a duplicate.
+  const listingIdRaw = formData.get('listingId');
+  const listingNameRaw = formData.get('listingName');
+  const listingId = typeof listingIdRaw === 'string' && listingIdRaw ? listingIdRaw : null;
+  const listingName = typeof listingNameRaw === 'string' && listingNameRaw ? listingNameRaw : null;
+
   const job = await prisma.job.create({
     data: {
       userId: session.user.id as string,
       status: 'PENDING',
       aspect,
+      listingId,
+      listingName,
       propertyJson: JSON.stringify(propertyParsed),
       mediaJson: '{}',
     },

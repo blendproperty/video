@@ -29,10 +29,18 @@ model Job {
   user         User     @relation(fields: [userId], references: [id])
   status       String   @default("PENDING") // PENDING | RENDERING | DONE | FAILED
   aspect       String   @default("landscape") // landscape | vertical
+  // Set when this job was created by picking a listing from
+  // listings.blendproperty.co.za via the "Choose listing" step — null for
+  // manually-entered jobs. Used to warn ("you already have N video(s) for
+  // this listing") before generating a duplicate.
+  listingId    String?
+  listingName  String?
   propertyJson String
   mediaJson    String
   outputPath   String?
   errorMessage String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([listingId])
 }
