@@ -11,6 +11,16 @@ interface JobRecord {
   errorMessage: string | null;
 }
 
+// Older jobs may have an outputPath saved as /renders/<id>.mp4 from before
+// the dedicated dynamic route handler existed — rewrite those on the fly so
+// they keep working without a data migration.
+function resolveOutputPath(outputPath: string): string {
+  if (outputPath.startsWith('/renders/')) {
+    return `/api${outputPath}`;
+  }
+  return outputPath;
+}
+
 export default function JobStatusPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
@@ -59,6 +69,7 @@ export default function JobStatusPage() {
   }
 
   const property = JSON.parse(job.propertyJson);
+  const videoSrc = job.outputPath ? resolveOutputPath(job.outputPath) : null;
 
   return (
     <div className="page">
@@ -68,11 +79,11 @@ export default function JobStatusPage() {
       {job.status === 'RENDERING' && <p>Rendering your video — this usually takes 1–2 minutes…</p>}
       {job.status === 'FAILED' && <p className="error">Render failed: {job.errorMessage}</p>}
 
-      {job.status === 'DONE' && job.outputPath && (
+      {job.status === 'DONE' && videoSrc && (
         <div>
-          <video controls src={job.outputPath} style={{ maxWidth: '100%', borderRadius: 12 }} />
+          <video controls src={videoSrc} style={{ maxWidth: '100%', borderRadius: 12 }} />
           <p>
-            <a href={job.outputPath} download className="primary-button">
+            <a href={videoSrc} download className="primary-button">
               Download MP4
             </a>
           </p>

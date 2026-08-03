@@ -64,8 +64,11 @@ export async function renderVideoForJob(jobId: string): Promise<void> {
     },
   });
 
+  // Served via an explicit dynamic route handler (web/app/api/renders/
+  // [filename]/route.ts), not Next's implicit public/ static serving — see
+  // that file for why.
   await prisma.job.update({
     where: { id: jobId },
-    data: { status: 'DONE', outputPath: `/renders/${jobId}.mp4` },
+    data: { status: 'DONE', outputPath: `/api/renders/${jobId}.mp4` },
   });
 }
