@@ -50,18 +50,30 @@ export async function POST(req: NextRequest) {
   const media: Record<string, string> = {};
   for (const slot of mediaSlots) {
     const file = formData.get(`photo_${slot.key}`);
-    if (!(file instanceof File)) {
-      await prisma.job.update({
-        where: { id: job.id },
-        data: { status: 'FAILED', errorMessage: `Missing photo for "${slot.label}"` },
-      });
-      return NextResponse.json({ error: `Missing photo for "${slot.label}"` }, { status: 400 });
+    const remoteUrl = formData.get(`photo_url_${slot.key}`);
+
+    if (file instanceof File) {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filename = `${slot.key}.${ext}`;
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(path.join(jobPhotoDir, filename), buffer);
+      media[slot.key] = `images/jobs/${job.id}/${filename}`;
+      continue;
     }
-    const ext = file.name.split('.').pop() || 'jpg';
-    const filename = `${slot.key}.${ext}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(path.join(jobPhotoDir, filename), buffer);
-    media[slot.key] = `images/jobs/${job.id}/${filename}`;
+
+    // Photo picked from a listing's existing gallery instead of uploaded —
+    // Remotion's <MediaScene> already renders remote https:// URLs
+    // directly, so there's no need to download and re-save these.
+    if (typeof remoteUrl === 'string' && /^https?:\/\//.test(remoteUrl)) {
+      media[slot.key] = remoteUrl;
+      continue;
+    }
+
+    await prisma.job.update({
+      where: { id: job.id },
+      data: { status: 'FAILED', errorMessage: `Missing photo for "${slot.label}"` },
+    });
+    return NextResponse.json({ error: `Missing photo for "${slot.label}"` }, { status: 400 });
   }
 
   await prisma.job.update({
