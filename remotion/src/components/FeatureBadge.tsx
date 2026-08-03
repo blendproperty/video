@@ -33,10 +33,10 @@ export const FeatureBadge: React.FC<{
         alignItems: 'center',
         gap: 10,
         padding: '12px 22px',
-        borderRadius: 999,
+        borderRadius: theme.radius.pill,
         border: `1.5px solid ${theme.colors.accent}`,
         backgroundColor: 'rgba(255,255,255,0.04)',
-        boxShadow: `0 0 ${18 * progress}px rgba(59,110,165,${0.35 * progress})`,
+        boxShadow: `0 0 ${18 * progress}px rgba(57,234,230,${0.35 * progress})`,
         transformOrigin: 'left center',
       }}
     >
@@ -44,7 +44,7 @@ export const FeatureBadge: React.FC<{
         style={{
           width: 8,
           height: 8,
-          borderRadius: 999,
+          borderRadius: theme.radius.pill,
           backgroundColor: theme.colors.accent,
           transform: `scale(${scaleX})`,
           flexShrink: 0,
@@ -54,7 +54,7 @@ export const FeatureBadge: React.FC<{
         style={{
           fontFamily: theme.fonts.body,
           fontSize: 30,
-          fontWeight: 600,
+          fontWeight: theme.weights.heading,
           color: theme.colors.textPrimary,
           whiteSpace: 'nowrap',
         }}
