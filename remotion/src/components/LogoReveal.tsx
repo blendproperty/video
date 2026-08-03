@@ -1,20 +1,22 @@
 // src/components/LogoReveal.tsx
 //
-// No Midpoint logo file has been supplied yet (only property photos), so
-// this renders a clean text wordmark with an animated accent underline as a
-// placeholder that still looks intentional, not broken.
-//
-// When you have the real logo:
-//   1. Save it at public/logos/midpoint-logo.png
-//   2. Uncomment the <Img> block below and delete the <TextWordmark> block
-//   3. Keep the same accent underline animation for consistency
+// Fades/slides in the real Midpoint lockup (public/logos/midpoint-lockup.svg)
+// with an animated cyan underline. Used in the opening and closing scenes.
 
 import React from 'react';
-import { Easing, interpolate, useCurrentFrame } from 'remotion';
-// import { Img, staticFile } from 'remotion';
+import { Easing, Img, interpolate, staticFile, useCurrentFrame } from 'remotion';
 import { theme } from '../styles/theme';
 
-const TextWordmark: React.FC<{ frame: number }> = ({ frame }) => {
+export const LogoReveal: React.FC<{ delay?: number; height?: number }> = ({
+  delay = 0,
+  height = 56,
+}) => {
+  const frame = useCurrentFrame() - delay;
+
+  if (frame < 0) {
+    return null;
+  }
+
   const opacity = interpolate(frame, [0, 15], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -26,31 +28,6 @@ const TextWordmark: React.FC<{ frame: number }> = ({ frame }) => {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
   });
 
-  return (
-    <div
-      style={{
-        opacity,
-        transform: `translateY(${translateY}px)`,
-        fontFamily: theme.fonts.heading,
-        fontSize: 56,
-        fontWeight: theme.weights.heading,
-        letterSpacing: 4,
-        color: theme.colors.textPrimary,
-        textTransform: 'uppercase',
-      }}
-    >
-      Midpoint
-    </div>
-  );
-};
-
-export const LogoReveal: React.FC<{ delay?: number }> = ({ delay = 0 }) => {
-  const frame = useCurrentFrame() - delay;
-
-  if (frame < 0) {
-    return null;
-  }
-
   const underlineWidth = interpolate(frame, [10, 30], [0, 140], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -59,16 +36,14 @@ export const LogoReveal: React.FC<{ delay?: number }> = ({ delay = 0 }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <TextWordmark frame={frame} />
-      {/*
       <Img
-        src={staticFile('logos/midpoint-logo.png')}
+        src={staticFile('logos/midpoint-lockup.svg')}
         style={{
-          height: 64,
-          opacity: interpolate(frame, [0, 15], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+          height,
+          opacity,
+          transform: `translateY(${translateY}px)`,
         }}
       />
-      */}
       <div
         style={{
           width: underlineWidth,
