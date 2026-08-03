@@ -1,8 +1,11 @@
 // src/compositions/PropertyPromo.tsx
 //
-// The full 9-scene promo, now a props-driven component (property + media
-// validated against data/schema.ts) instead of importing static data. This
-// is what lets a portal render any listing without touching source code.
+// The full 9-scene promo, driven entirely by props (property + media
+// validated against data/schema.ts). Works for any of the three property
+// categories (warehouse / commercial / land) because the scenes read
+// generic fields (totalArea/totalAreaLabel, stats[], featuresHeadline)
+// rather than warehouse-specific ones — the portal's wizard fills in
+// sensible defaults per category, and the agent can edit them freely.
 // Total duration: 885 frames = 29.5s at 30fps.
 
 import React from 'react';
@@ -23,10 +26,10 @@ import { ProgressLine } from '../components/ProgressLine';
 export const SCENE_DURATIONS = {
   opening: 60,
   positioning: 105,
-  glaCounter: 90,
-  mainSpace: 105,
+  primaryAreaCounter: 90,
+  secondaryAreaCounter: 105,
   operationalFeatures: 105,
-  buildingInfra: 105,
+  builtForBusiness: 105,
   location: 90,
   rentalAvailability: 105,
   finalCta: 120,
@@ -37,7 +40,7 @@ export const TOTAL_DURATION = Object.values(SCENE_DURATIONS).reduce((sum, d) => 
 type SceneProps = { property: PropertyInput; media: MediaInput };
 
 const OpeningScene: React.FC<SceneProps> = ({ property, media }) => (
-  <MediaScene src={media.exteriorCornerA} durationInFrames={SCENE_DURATIONS.opening} panDirection="in">
+  <MediaScene src={media.exteriorA} durationInFrames={SCENE_DURATIONS.opening} panDirection="in">
     <SafeArea align="bottom">
       <LogoReveal delay={2} />
       <div style={{ height: 24 }} />
@@ -51,7 +54,7 @@ const OpeningScene: React.FC<SceneProps> = ({ property, media }) => (
           textTransform: 'uppercase',
         }}
       >
-        To Let
+        {property.listingLabel}
       </div>
       <div
         style={{
@@ -71,15 +74,20 @@ const OpeningScene: React.FC<SceneProps> = ({ property, media }) => (
 );
 
 const PositioningScene: React.FC<SceneProps> = ({ property, media }) => (
-  <MediaScene src={media.exteriorCornerB} durationInFrames={SCENE_DURATIONS.positioning} panDirection="right">
+  <MediaScene src={media.exteriorB} durationInFrames={SCENE_DURATIONS.positioning} panDirection="right">
     <SafeArea align="center">
-      <BrandedHeadline text={property.headline} highlight="offices" fontSize={64} delay={4} />
+      <BrandedHeadline text={property.headline} fontSize={64} delay={4} />
     </SafeArea>
   </MediaScene>
 );
 
-const GlaCounterScene: React.FC<SceneProps> = ({ property, media }) => (
-  <MediaScene src={media.warehouseInteriorB} durationInFrames={SCENE_DURATIONS.glaCounter} panDirection="in" gradient="both">
+const PrimaryAreaCounterScene: React.FC<SceneProps> = ({ property, media }) => (
+  <MediaScene
+    src={media.primaryAreaBackdrop}
+    durationInFrames={SCENE_DURATIONS.primaryAreaCounter}
+    panDirection="in"
+    gradient="both"
+  >
     <SafeArea align="center">
       <div
         style={{
@@ -92,17 +100,17 @@ const GlaCounterScene: React.FC<SceneProps> = ({ property, media }) => (
           marginBottom: 8,
         }}
       >
-        Total GLA
+        {property.totalAreaLabel}
       </div>
-      <AnimatedCounter to={property.totalGla} suffix=" m²" fontSize={140} durationInFrames={40} delay={4} />
+      <AnimatedCounter to={property.totalArea} suffix=" m²" fontSize={140} durationInFrames={40} delay={4} />
     </SafeArea>
   </MediaScene>
 );
 
-const MainSpaceScene: React.FC<SceneProps> = ({ property, media }) => (
-  <MediaScene src={media.warehouseInteriorA} durationInFrames={SCENE_DURATIONS.mainSpace} panDirection="left">
+const SecondaryAreaCounterScene: React.FC<SceneProps> = ({ property, media }) => (
+  <MediaScene src={media.secondaryAreaBackdrop} durationInFrames={SCENE_DURATIONS.secondaryAreaCounter} panDirection="left">
     <SafeArea align="bottom">
-      <AnimatedCounter to={property.warehouseArea} suffix=" m²" fontSize={92} durationInFrames={36} delay={4} />
+      <AnimatedCounter to={property.secondaryArea} suffix=" m²" fontSize={92} durationInFrames={36} delay={4} />
       <div
         style={{
           fontFamily: theme.fonts.body,
@@ -111,45 +119,42 @@ const MainSpaceScene: React.FC<SceneProps> = ({ property, media }) => (
           color: theme.colors.textSecondary,
         }}
       >
-        of clear-span warehouse space
+        {property.secondaryAreaLabel}
       </div>
     </SafeArea>
   </MediaScene>
 );
 
 const OperationalFeaturesScene: React.FC<SceneProps> = ({ property, media }) => (
-  <MediaScene src={media.loadingCanopy} durationInFrames={SCENE_DURATIONS.operationalFeatures} panDirection="in">
+  <MediaScene src={media.featureShot} durationInFrames={SCENE_DURATIONS.operationalFeatures} panDirection="in">
     <SafeArea align="bottom">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <FeatureBadge label={`${property.stats.heightToEavesMetres}m to the eaves`} delay={4} />
-        <FeatureBadge
-          label={`${formatZaNumber(property.stats.loadBearingKgPerSqm)} kg/m² load bearing`}
-          delay={14}
-        />
-        <FeatureBadge label={`${property.stats.powerMva} MVA power supply`} delay={24} />
+        {property.stats.map((stat, i) => (
+          <FeatureBadge key={stat.label} label={`${stat.label}: ${stat.value}`} delay={4 + i * 10} />
+        ))}
       </div>
     </SafeArea>
   </MediaScene>
 );
 
-const BuildingInfraScene: React.FC<SceneProps> = ({ media }) => (
-  <MediaScene src={media.carportsGenerator} durationInFrames={SCENE_DURATIONS.buildingInfra} panDirection="out">
+const BuiltForBusinessScene: React.FC<SceneProps> = ({ property, media }) => (
+  <MediaScene src={media.infrastructureShot} durationInFrames={SCENE_DURATIONS.builtForBusiness} panDirection="out">
     <SafeArea align="top">
-      <BrandedHeadline text="Built for business" fontSize={56} delay={2} />
+      <BrandedHeadline text={property.featuresHeadline} fontSize={56} delay={2} />
       <div style={{ height: 220 }} />
     </SafeArea>
     <SafeArea align="bottom">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <FeatureBadge label="Backup Power" delay={20} />
-        <FeatureBadge label="Backup Water" delay={30} />
-        <FeatureBadge label="24-hour Security" delay={40} />
+        {property.features.slice(0, 3).map((feature, i) => (
+          <FeatureBadge key={feature} label={feature} delay={20 + i * 10} />
+        ))}
       </div>
     </SafeArea>
   </MediaScene>
 );
 
 const LocationScene: React.FC<SceneProps> = ({ property, media }) => (
-  <MediaScene src={media.pondWide} durationInFrames={SCENE_DURATIONS.location} panDirection="in">
+  <MediaScene src={media.groundsWide} durationInFrames={SCENE_DURATIONS.location} panDirection="in">
     <SafeArea align="center">
       <BrandedHeadline
         text={`Strategically located in\n${property.location}`}
@@ -162,7 +167,7 @@ const LocationScene: React.FC<SceneProps> = ({ property, media }) => (
 );
 
 const RentalAvailabilityScene: React.FC<SceneProps> = ({ property, media }) => (
-  <MediaScene src={media.dockCorridor} durationInFrames={SCENE_DURATIONS.rentalAvailability} panDirection="right" gradient="both">
+  <MediaScene src={media.availabilityBackdrop} durationInFrames={SCENE_DURATIONS.rentalAvailability} panDirection="right" gradient="both">
     <SafeArea align="center">
       <div
         style={{
@@ -223,17 +228,17 @@ export const PropertyPromo: React.FC<SceneProps> = ({ property, media }) => {
       <Sequence from={at('positioning')} durationInFrames={SCENE_DURATIONS.positioning} premountFor={15}>
         <PositioningScene property={property} media={media} />
       </Sequence>
-      <Sequence from={at('glaCounter')} durationInFrames={SCENE_DURATIONS.glaCounter} premountFor={15}>
-        <GlaCounterScene property={property} media={media} />
+      <Sequence from={at('primaryAreaCounter')} durationInFrames={SCENE_DURATIONS.primaryAreaCounter} premountFor={15}>
+        <PrimaryAreaCounterScene property={property} media={media} />
       </Sequence>
-      <Sequence from={at('mainSpace')} durationInFrames={SCENE_DURATIONS.mainSpace} premountFor={15}>
-        <MainSpaceScene property={property} media={media} />
+      <Sequence from={at('secondaryAreaCounter')} durationInFrames={SCENE_DURATIONS.secondaryAreaCounter} premountFor={15}>
+        <SecondaryAreaCounterScene property={property} media={media} />
       </Sequence>
       <Sequence from={at('operationalFeatures')} durationInFrames={SCENE_DURATIONS.operationalFeatures} premountFor={15}>
         <OperationalFeaturesScene property={property} media={media} />
       </Sequence>
-      <Sequence from={at('buildingInfra')} durationInFrames={SCENE_DURATIONS.buildingInfra} premountFor={15}>
-        <BuildingInfraScene property={property} media={media} />
+      <Sequence from={at('builtForBusiness')} durationInFrames={SCENE_DURATIONS.builtForBusiness} premountFor={15}>
+        <BuiltForBusinessScene property={property} media={media} />
       </Sequence>
       <Sequence from={at('location')} durationInFrames={SCENE_DURATIONS.location} premountFor={15}>
         <LocationScene property={property} media={media} />
