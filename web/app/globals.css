@@ -244,7 +244,97 @@ legend {
   flex: 1;
 }
 
-/* --- Photo upload grid --------------------------------------------------- */
+/* --- Listing picker ------------------------------------------------------ */
+
+.source-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.source-choice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  padding: 24px;
+  border-radius: 14px;
+  background: var(--mp-cyan-black-alt);
+  border: 1px solid rgba(57, 234, 230, 0.15);
+  color: var(--mp-white);
+  font-weight: 400;
+}
+
+.source-choice-card:hover {
+  border-color: var(--mp-cyan);
+}
+
+.source-choice-card strong {
+  font-size: 16px;
+}
+
+.source-choice-card span {
+  font-size: 13px;
+  color: var(--mp-grey-200);
+  font-weight: 400;
+}
+
+.listing-search-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.listing-search-row input {
+  flex: 1;
+}
+
+.listing-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.listing-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--mp-cyan-black-alt);
+  border: 1px solid rgba(202, 205, 213, 0.15);
+  color: var(--mp-white);
+  font-weight: 400;
+  text-align: left;
+}
+
+.listing-card:hover {
+  border-color: var(--mp-cyan);
+}
+
+.listing-card-thumb {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.listing-card-thumb-empty {
+  background: rgba(202, 205, 213, 0.08);
+}
+
+.listing-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+}
+
+.listing-card-body small {
+  color: var(--mp-grey-400);
+}
+
+/* --- Photo upload / gallery-pick grid ------------------------------------ */
 
 .photo-grid {
   display: grid;
@@ -253,6 +343,9 @@ legend {
 }
 
 .photo-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   border: 1px solid rgba(202, 205, 213, 0.15);
   border-radius: 12px;
   padding: 14px;
@@ -276,6 +369,41 @@ legend {
 .photo-slot-filename {
   color: var(--mp-cyan) !important;
   word-break: break-all;
+}
+
+.listing-thumb-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.listing-thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: rgba(202, 205, 213, 0.08);
+}
+
+.listing-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.listing-thumb-selected {
+  border-color: var(--mp-cyan);
+}
+
+.upload-fallback {
+  font-size: 12px;
+  color: var(--mp-grey-400);
+  margin: 0;
 }
 
 .error {
