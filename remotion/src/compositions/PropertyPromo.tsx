@@ -45,7 +45,7 @@ const OpeningScene: React.FC<SceneProps> = ({ property, media }) => (
         style={{
           fontFamily: theme.fonts.body,
           fontSize: 34,
-          fontWeight: 700,
+          fontWeight: theme.weights.heading,
           color: theme.colors.textPrimary,
           letterSpacing: 3,
           textTransform: 'uppercase',
@@ -57,7 +57,7 @@ const OpeningScene: React.FC<SceneProps> = ({ property, media }) => (
         style={{
           fontFamily: theme.fonts.heading,
           fontSize: 44,
-          fontWeight: 700,
+          fontWeight: theme.weights.heading,
           color: theme.colors.textPrimary,
         }}
       >
@@ -85,7 +85,7 @@ const GlaCounterScene: React.FC<SceneProps> = ({ property, media }) => (
         style={{
           fontFamily: theme.fonts.body,
           fontSize: 28,
-          fontWeight: 700,
+          fontWeight: theme.weights.heading,
           letterSpacing: 3,
           textTransform: 'uppercase',
           color: theme.colors.accent,
@@ -103,7 +103,14 @@ const MainSpaceScene: React.FC<SceneProps> = ({ property, media }) => (
   <MediaScene src={media.warehouseInteriorA} durationInFrames={SCENE_DURATIONS.mainSpace} panDirection="left">
     <SafeArea align="bottom">
       <AnimatedCounter to={property.warehouseArea} suffix=" m²" fontSize={92} durationInFrames={36} delay={4} />
-      <div style={{ fontFamily: theme.fonts.body, fontSize: 34, fontWeight: 600, color: theme.colors.textSecondary }}>
+      <div
+        style={{
+          fontFamily: theme.fonts.body,
+          fontSize: 34,
+          fontWeight: theme.weights.body,
+          color: theme.colors.textSecondary,
+        }}
+      >
         of clear-span warehouse space
       </div>
     </SafeArea>
@@ -161,7 +168,7 @@ const RentalAvailabilityScene: React.FC<SceneProps> = ({ property, media }) => (
         style={{
           fontFamily: theme.fonts.body,
           fontSize: 30,
-          fontWeight: 700,
+          fontWeight: theme.weights.heading,
           letterSpacing: 3,
           textTransform: 'uppercase',
           color: theme.colors.accent,
@@ -175,7 +182,14 @@ const RentalAvailabilityScene: React.FC<SceneProps> = ({ property, media }) => (
         per month{property.excludingVat ? ', excluding VAT' : ''}
       </div>
       <div style={{ height: 12 }} />
-      <div style={{ fontFamily: theme.fonts.heading, fontSize: 44, fontWeight: 700, color: theme.colors.textPrimary }}>
+      <div
+        style={{
+          fontFamily: theme.fonts.heading,
+          fontSize: 44,
+          fontWeight: theme.weights.heading,
+          color: theme.colors.textPrimary,
+        }}
+      >
         {formatZaCurrency(property.ratePerSquareMetre)}/m²
       </div>
     </SafeArea>
