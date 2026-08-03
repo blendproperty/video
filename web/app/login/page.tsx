@@ -30,8 +30,12 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/midpoint-lockup.svg" alt="Midpoint" className="auth-logo" />
       <form className="auth-card" onSubmit={onSubmit}>
-        <h1 style={{ fontSize: 18, marginBottom: 4 }}>Blend Property — Video Studio</h1>
+        <h1 style={{ fontSize: 16, fontWeight: 600, color: 'var(--mp-grey-200)', margin: '0 0 4px' }}>
+          Video Studio
+        </h1>
         <label>
           Email
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
