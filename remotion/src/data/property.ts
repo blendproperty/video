@@ -7,15 +7,19 @@
 import type { PropertyInput } from './schema';
 
 export const defaultProperty: PropertyInput = {
+  propertyCategory: 'warehouse',
+
   propertyName: '6 Weaver Avenue',
   propertyType: 'Warehouse & Office',
   location: 'Halfway House, Midrand',
   address: '6 Weaver Avenue, Halfway House, Midrand',
 
-  totalGla: 11443,
-  warehouseArea: 10150,
-  officeArea: 1293,
-  yardArea: 5800,
+  listingLabel: 'To Let',
+
+  totalArea: 11443,
+  totalAreaLabel: 'Total GLA',
+  secondaryArea: 10150,
+  secondaryAreaLabel: 'of clear-span warehouse space',
 
   monthlyRental: 1247287,
   ratePerSquareMetre: 109,
@@ -29,12 +33,13 @@ export const defaultProperty: PropertyInput = {
   description:
     'Premium frontage overlooking a landscaped dam, with exceptional signage exposure to the N1 and full design flexibility across the façade, entry points and internal layout.',
 
-  stats: {
-    heightToEavesMetres: 15,
-    loadBearingKgPerSqm: 3000,
-    powerMva: 2.5,
-  },
+  stats: [
+    { label: 'Height to eaves', value: '15m' },
+    { label: 'Load bearing', value: '3 000 kg/m²' },
+    { label: 'Power supply', value: '2.5 MVA' },
+  ],
 
+  featuresHeadline: 'Built for business',
   features: [
     'Warehousing',
     'Prime Offices',
