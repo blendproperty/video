@@ -49,6 +49,14 @@ const PROPERTY_TYPE_TO_CATEGORY: Record<string, PropertyCategory> = {
   LAND: 'land',
 };
 
+// Warehouse (total GLA vs. clear-span warehouse floor) and Land (total erf
+// vs. usable yard) both have a meaningful "primary vs secondary area"
+// breakdown. A small serviced office doesn't — there's usually just one
+// number. Rather than ask for a figure that doesn't exist, we hide the
+// field for Commercial and quietly mirror totalArea into secondaryArea at
+// submit time (see onSubmit).
+const CATEGORIES_WITH_SECONDARY_AREA: PropertyCategory[] = ['warehouse', 'land'];
+
 type ListingImage = { url: string | null; altText: string | null; position: number; isHero: boolean };
 type ListingContact = { name: string | null; jobTitle: string | null; phone: string | null; whatsapp: string | null; email: string | null };
 type Listing = {
@@ -95,6 +103,7 @@ export default function NewJobPage() {
   const step = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
   const mediaSlots = getMediaSlots(form.propertyCategory);
+  const hasSecondaryArea = CATEGORIES_WITH_SECONDARY_AREA.includes(form.propertyCategory);
 
   const update = (path: string, value: unknown) => {
     setForm((prev) => {
@@ -221,9 +230,11 @@ export default function NewJobPage() {
         ['Building grade', form.buildingGrade],
         ['Availability', form.availability],
         [form.totalAreaLabel || 'Total area', form.totalArea],
-        [form.secondaryAreaLabel || 'Secondary area', form.secondaryArea],
         ['Monthly rental', form.monthlyRental],
         ['Rate per m²', form.ratePerSquareMetre],
+        ...(hasSecondaryArea
+          ? ([[form.secondaryAreaLabel || 'Secondary area', form.secondaryArea]] as [string, unknown][])
+          : []),
       ];
       const missing = required.filter(([, v]) => v === '' || v === null || v === undefined);
       if (missing.length > 0) return `Please fill in: ${missing.map(([label]) => label).join(', ')}`;
@@ -281,7 +292,10 @@ export default function NewJobPage() {
     const property = {
       ...form,
       totalArea: Number(form.totalArea),
-      secondaryArea: Number(form.secondaryArea),
+      // Commercial has no secondary-area field in the UI (nothing to break
+      // a small office down into) — mirror the total area so the scene
+      // that reads it still has a sensible number instead of 0/NaN.
+      secondaryArea: hasSecondaryArea ? Number(form.secondaryArea) : Number(form.totalArea),
       monthlyRental: Number(form.monthlyRental),
       ratePerSquareMetre: Number(form.ratePerSquareMetre),
       features: form.featuresText
@@ -503,22 +517,26 @@ export default function NewJobPage() {
                   Label for above
                   <input value={form.totalAreaLabel} onChange={(e) => update('totalAreaLabel', e.target.value)} />
                 </label>
-                <label>
-                  Secondary area (m²)
-                  <input
-                    type="number"
-                    value={form.secondaryArea}
-                    onChange={(e) => update('secondaryArea', e.target.value)}
-                  />
-                </label>
-                <label>
-                  Caption for above
-                  <input
-                    value={form.secondaryAreaLabel}
-                    onChange={(e) => update('secondaryAreaLabel', e.target.value)}
-                    placeholder="e.g. of clear-span warehouse space"
-                  />
-                </label>
+                {hasSecondaryArea && (
+                  <>
+                    <label>
+                      Secondary area (m²)
+                      <input
+                        type="number"
+                        value={form.secondaryArea}
+                        onChange={(e) => update('secondaryArea', e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Caption for above
+                      <input
+                        value={form.secondaryAreaLabel}
+                        onChange={(e) => update('secondaryAreaLabel', e.target.value)}
+                        placeholder="e.g. of clear-span warehouse space"
+                      />
+                    </label>
+                  </>
+                )}
               </div>
             </fieldset>
 
