@@ -1,3 +1,13 @@
+## 2026-10-27 - Node 22.23.4 patch candidate
+
+- Implementation: pin the portal/renderer Docker base to official Node 22.23.4 Bookworm slim by OCI digest, preserving Debian/Chromium compatibility and business behavior. CI builds the actual combined image, asserts Node version and verifies packaged renderer browser availability.
+- Testing: candidate only; hosted build/image qualification pending. Actual rendering, upload and business UAT remain separate.
+- Commit/push: isolated codex/node-patch-20261027; exact remote commit/context readback required after publication. Existing live source/data changes preserved.
+- Merge: draft PR pending normal checks and review requirements.
+- Deployment/configuration: not deployed. Retain running image d94f9fe29b85a06ae7bccc2df48dd43baa43ec317c0ad41c5f61eab1cb5f59f5 and existing backup/recovery evidence; verify runtime-source parity and active rendering before a restart. No organisation transfer or provider/network/credential changes.
+- Live verification: baseline production Node v22.23.2; patched version, exact deployed image/commit and read-only site health pending. CI runner versions are not production proof.
+- Gates: all existing customer/source-data, provider, finance, legal/privacy, device, training, physical-access, offline/recovery and owner UAT/approval gates remain. No real upload/render/customer mutation or outbound message used as a test.
+
 # Video project context
 
 ## 2026-10-27 - Verified one-off encrypted backup and isolated restore rehearsal

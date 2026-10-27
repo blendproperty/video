@@ -1,0 +1,18 @@
+name: Verify patched production runtime
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build actual portal and renderer image
+        run: docker build -t node-patch:ci .
+      - name: Verify patched runtime and installed renderer
+        run: |
+          test "$(docker run --rm --entrypoint node node-patch:ci --version)" = "v22.23.4"
+          docker run --rm --entrypoint sh node-patch:ci -c 'cd /app/remotion && npx remotion browser ensure'
