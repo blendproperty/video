@@ -42,3 +42,26 @@ Bounded before/after Docker metadata verification: original image, start time, r
 - Repository remains personal-owned and public; no `BlendPropertyGroup/video` copy or transfer exists. Any transfer, visibility/app permission/hosting change, new cost or production restore needs a separately reviewed plan and approval. Earlier provider/UAT/customer-data/training/security acceptance gates are not closed by this backup test.
 
 Rehearsal completion evidence UTC: 2026-10-27T07:56:44.490726+00:00. Private run reference: `video-20261027T074207Z`.
+
+
+## 2026-10-27 - Recovery key in owner-approved password vault; final transfer checklist prepared
+
+### Implementation and privacy
+
+Saved one recovery-key entry in the owner-approved Zoho Vault account. Verified correct CSV column mapping into a masked Password field, header skipped, no login URL/shared folder; one successful import and persisted entry after page reload and owner master-password unlock. Subscription UI showed PERSONAL Active / Free Forever. No other user, sharing link, folder membership, plan change or external message was created. The original Windows-protected key remains as a secondary recovery copy. Both task-owned plaintext key/CSV staging files were removed and absence verified after the PASS; original DPAPI copy retained. Private evidence records the cleanup.
+
+### Testing
+
+Browser secret readback was redacted; this was not bypassed. Earlier command-line attempts did not verify and are retained as failures, without logging supplied values. A user-operated masked local verification box then passed at 2026-10-27T09:50:42.911080+00:00, accepting a 44-character Base64 value decoding to the original 32-byte AES key and authenticating an independent AES-GCM challenge. This check used no DPAPI, automatic clipboard reading, network request or production service. Zoho UI Copy plus user paste was used. The previously tested archive identity is SHA-256 `199be2a9713b3b074e59156ac2d8024f0250ad03e203dfd87717a425f2845ca3`. This establishes user-assisted portable key correctness; vault-account recovery/another-device access and a full fresh-host archive/image recovery are not newly tested here.
+
+### Checklist, commit/push and merge
+
+Prepared [TRANSFER_CHECKLIST.md](TRANSFER_CHECKLIST.md) for exactly one proposed transfer: existing repository ID1318321997, blendproperty/video to BlendPropertyGroup/video, preserving public visibility/main/history/settings. Ready checks, fresh pre-transfer snapshots, post-transfer acceptance, stop/recovery boundaries and separately approved hosting/security actions are explicit. It does NOT authorise or perform transfer. Current organisation Team allocation remains two seats/one filled, source sole collaborator already the org owner; no members/paid features added. Only this context and checklist documentation are promoted; exact commit/blob/head and changed-file verification are recorded in private evidence. No PR merge.
+
+### Deployment/configuration and live verification
+
+No repository transfer, app code change, live pull/checkout/build, service restart, Hostinger configuration, runtime secret, DNS, provider access, visibility or billing change. Source still has no Actions workflows. Pre-promotion read-only checks verified source owner/destination absence, running original application checkout/image/start/restarts and unchanged origin with no tracked diff; login returned HTTP 200. Post-promotion docs-only diff, canonical remote context/checklist and runtime readback are mandatory handoff guards, recorded with exact commit/blob IDs in private evidence. These are bounded checks; no customer/provider journeys executed.
+
+### Outstanding gates
+
+Brett's separate explicit transfer approval and a fresh exact-head/access/provider snapshot are still required. No old namespace recreation, app installation, additional reviewer invitation, branch-protection/CI activation, server-remote update, backup schedule change or production restore is approved. Earlier full disaster-recovery/UAT/provider/data/training/security acceptance limits remain. Recurring video backup operation, vault account recovery/emergency company custody and fresh-host restoration remain separate work.
