@@ -1,3 +1,19 @@
+## 2026-10-28 - Reproduce existing runtime dependencies and migration history
+
+- Implementation: retain exactly the installed portal/renderer lockfiles from the existing production image, avoiding unrelated dependency drift during the Node patch. Add the existing historical init migration missing from Git; its SHA-256 98d9c31005c3d3ab1e6388b10890b0d0f5ddce6ca5fbf0a64b0b3c6f758744f8 matches the finished production Prisma ledger entry from 31 July. No new schema operation or customer-data change is intended. All resolved dependency URLs use the official npm registry.
+- Testing: baseline has zero pending/rendering jobs; both existing migrations are finished. Rerun combined image build/version and renderer-browser qualification with these exact files before promotion. Production remains unchanged.
+- Release: preserve existing source/data directories; use isolated exact-source build with fresh consistent SQLite backup, no active jobs and unchanged mounts/routing/settings. Retain prior image and business/provider/finance/device/security/recovery/UAT gates.
+
+## 2026-10-27 - Node 22.23.4 patch candidate
+
+- Implementation: pin the portal/renderer Docker base to official Node 22.23.4 Bookworm slim by OCI digest, preserving Debian/Chromium compatibility and business behavior. CI builds the actual combined image, asserts Node version and verifies packaged renderer browser availability.
+- Testing: candidate only; hosted build/image qualification pending. Actual rendering, upload and business UAT remain separate.
+- Commit/push: isolated codex/node-patch-20261027; exact remote commit/context readback required after publication. Existing live source/data changes preserved.
+- Merge: draft PR pending normal checks and review requirements.
+- Deployment/configuration: not deployed. Retain running image d94f9fe29b85a06ae7bccc2df48dd43baa43ec317c0ad41c5f61eab1cb5f59f5 and existing backup/recovery evidence; verify runtime-source parity and active rendering before a restart. No organisation transfer or provider/network/credential changes.
+- Live verification: baseline production Node v22.23.2; patched version, exact deployed image/commit and read-only site health pending. CI runner versions are not production proof.
+- Gates: all existing customer/source-data, provider, finance, legal/privacy, device, training, physical-access, offline/recovery and owner UAT/approval gates remain. No real upload/render/customer mutation or outbound message used as a test.
+
 # Video project context
 
 ## 2026-10-27 - Verified one-off encrypted backup and isolated restore rehearsal
